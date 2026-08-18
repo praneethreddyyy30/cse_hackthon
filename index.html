@@ -75,9 +75,11 @@
             </div>
           </div>
 
-          <!-- Detailed Interaction Logs with Formula Weights -->
-          <div class="section-title">
+          <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
             <span>Interaction Scoring log</span>
+            <button onclick="exportSessionLog()" style="font-size: 0.7rem; background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-sans); color: var(--text-secondary); transition: var(--transition-smooth); display: flex; align-items: center; gap: 4px; font-weight: 600;">
+              <span>📤 Export Report</span>
+            </button>
           </div>
           <div class="interaction-history-card">
             <div class="log-table-wrapper">

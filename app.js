@@ -1539,7 +1539,7 @@ function renderRecommendations(reels) {
     const explanation = getExplainabilityFields(reel);
 
     const card = document.createElement("div");
-    card.className = "schema-card";
+    card.className = `schema-card category-${reel.category.toLowerCase()}`;
     
     // Choose badge coloring
     const diffClass = `difficulty-${reel.difficulty.toLowerCase()}`;
@@ -1829,7 +1829,7 @@ function renderRecommendations(reels) {
 
     const card = document.createElement("div");
     // Append external-card class for custom YouTube branding if external
-    card.className = `schema-card ${reel.is_external ? 'external-card' : ''}`;
+    card.className = `schema-card category-${reel.category.toLowerCase()} ${reel.is_external ? 'external-card' : ''}`;
     
     // Choose badge coloring
     const diffClass = `difficulty-${reel.difficulty.toLowerCase()}`;
@@ -1897,3 +1897,21 @@ function renderRecommendations(reels) {
     container.appendChild(card);
   });
 }
+
+// Export session logs as JSON report
+window.exportSessionLog = function() {
+  const reportData = {
+    timestamp: new Date().toISOString(),
+    sessionHistory: sessionHistory,
+    inferredDNA: window.inferredDNA || {},
+    recommendations: window.activeRecommendations || []
+  };
+
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `reelfocus_session_report_${Date.now()}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+};
