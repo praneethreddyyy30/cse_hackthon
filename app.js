@@ -1871,6 +1871,12 @@ function renderRecommendations(reels) {
   const container = document.getElementById("recommendationsList");
   container.innerHTML = "";
 
+  // Auto-scroll recommendations panel to the top so new recommendations are instantly visible
+  const panel = document.querySelector(".panel-recommendations");
+  if (panel) {
+    panel.scrollTop = 0;
+  }
+
   if (reels.length === 0) {
     container.innerHTML = `<div class="recommendation-status">No recommendations matching your current interest vector. Scroll some more!</div>`;
     return;
