@@ -443,6 +443,8 @@ function renderFeedSlides() {
   const container = document.getElementById("phoneScrollContainer");
   if (!container) return;
 
+  const savedScrollTop = container.scrollTop;
+
   container.innerHTML = "";
 
   INPUT_REELS.forEach((reel) => {
@@ -543,6 +545,10 @@ function renderFeedSlides() {
   });
 
   setupScrollObserver();
+
+  // Restore scroll position to prevent scroll snapping jumps during dynamic feed injections
+  container.scrollTop = savedScrollTop;
+
   setActiveReel(currentReelIndex);
 }
 
@@ -787,37 +793,67 @@ function updateTimeSliderText(watched, duration) {
  * Returns true if a new reel was successfully appended.
  */
 function checkAndInjectRecommendation() {
-  const topRec = window.activeRecommendations && window.activeRecommendations[0];
-  if (!topRec) return false;
+  // Find a recommendation from activeRecommendations that hasn't been added to INPUT_REELS yet
+  let nextRec = null;
+  if (window.activeRecommendations && window.activeRecommendations.length > 0) {
+    nextRec = window.activeRecommendations.find(rec => 
+      !INPUT_REELS.some(r => r.id === rec.id || r.title === rec.title || r.youtube_id === rec.youtube_id)
+    );
+  }
 
-  // Check if this video has already been added to the feed
-  const alreadyAdded = INPUT_REELS.some(r => r.id === topRec.id || r.title === topRec.title);
-  if (alreadyAdded) return false;
+  // If no new candidates are in activeRecommendations, fall back to the main RECOMMENDED_LIBRARY
+  if (!nextRec) {
+    const userDNA = window.inferredDNA || {};
+    const availableCandidates = RECOMMENDED_LIBRARY.filter(c => 
+      !INPUT_REELS.some(r => r.youtube_id === c.youtube_id || r.title === c.title || r.id === c.id)
+    );
+
+    if (availableCandidates.length > 0) {
+      // Calculate scores dynamically
+      const scored = availableCandidates.map(candidate => {
+        let score = 0;
+        Object.keys(candidate.relevance_vector).forEach(cat => {
+          const userPreference = userDNA[cat] || 0;
+          score += userPreference * candidate.relevance_vector[cat];
+        });
+        if (userDNA["Career"] > 10 && candidate.relevance_vector["Career"]) {
+          score += userDNA["Career"] * candidate.relevance_vector["Career"] * 0.5;
+        }
+        return { candidate, score };
+      });
+      
+      scored.sort((a, b) => b.score - a.score);
+      nextRec = scored[0].candidate;
+    }
+  }
+
+  // If we still don't have a new candidate, we cannot inject anything more
+  if (!nextRec) return false;
 
   // Construct simulator Reel from Candidate Recommendation
   const injectedReel = {
-    id: topRec.id || `injected_${Date.now()}`,
-    title: topRec.title,
-    creator: topRec.creator || "youtube_educator",
+    id: nextRec.id || `injected_${Date.now()}`,
+    title: nextRec.title,
+    creator: nextRec.creator || "youtube_educator",
     duration: 45, // default duration
-    youtube_id: topRec.youtube_id || "psQzyFpUGb0",
-    description: `Educational recommendation based on your interests: ${topRec.transcript || topRec.learning_outcome}`,
-    transcript: topRec.transcript || "",
-    visuals: `Animated schematic describing ${topRec.title}.`,
+    youtube_id: nextRec.youtube_id || "psQzyFpUGb0",
+    description: `Educational recommendation based on your interests: ${nextRec.transcript || nextRec.learning_outcome}`,
+    transcript: nextRec.transcript || "",
+    visuals: `Animated schematic describing ${nextRec.title}.`,
     category_weights: {},
-    tags: [topRec.category.toLowerCase(), "education", "learning"],
+    tags: [nextRec.category.toLowerCase(), "education", "learning"],
     is_injected: true // Displays the green indicator badge
   };
 
   // Seed category weights (strong focus on recommended category)
-  injectedReel.category_weights[topRec.category] = 0.9;
+  injectedReel.category_weights[nextRec.category] = 0.9;
   injectedReel.category_weights["Career"] = 0.2; // slight career booster
 
   // Build dynamic explanation card details citing recommendation engine source
   injectedReel.customExplanation = {
-    interestDetected: topRec.category + " Focus",
-    whyRecommend: topRec.transcript ? topRec.transcript.substring(0, 150) + "..." : topRec.learning_outcome,
-    engine: window.recommendationSource || (topRec.is_external ? "Gemini LLM" : "Local Model")
+    interestDetected: nextRec.category + " Focus",
+    whyRecommend: nextRec.transcript ? nextRec.transcript.substring(0, 150) + "..." : nextRec.learning_outcome,
+    engine: window.recommendationSource || (nextRec.is_external ? "Gemini LLM" : "Local Model")
   };
 
   // Push to feed and initialize state
@@ -834,7 +870,11 @@ function checkAndInjectRecommendation() {
 
   // Re-render feed slides to include the injected reel in scrollable list
   renderFeedSlides();
-  showInjectionNotification(topRec.title);
+  showInjectionNotification(nextRec.title);
+  
+  // Re-run recommendations search dynamically in the background to refresh activeRecommendations
+  triggerDebouncedRecommendations();
+
   return true;
 }
 
