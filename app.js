@@ -67,7 +67,7 @@ let activeCommentReelId = null;
 const CORE_CATEGORIES = ["AI", "DSA", "Java", "HLD", "Cybersecurity", "Cloud", "Hardware", "Career", "Entertainment", "Gaming"];
 
 // Initialize Application on window load
-window.addEventListener("DOMContentLoaded", () => {
+function initializeApplication() {
   // Capture the original feed length before any dynamic recommendation injection
   originalReelsCount = INPUT_REELS.length;
 
@@ -106,7 +106,48 @@ window.addEventListener("DOMContentLoaded", () => {
   
   // Initialize drag-to-scroll for desktop mouse navigation
   initDragScroll();
+}
+
+// Global login handler
+window.handleLogin = function() {
+  const user = document.getElementById("loginUsername").value.trim();
+  const pass = document.getElementById("loginPassword").value;
+  const errorMsg = document.getElementById("loginError");
+  
+  // Basic default credentials
+  if (user === "admin" && pass === "password123") {
+    sessionStorage.setItem("reelfocus_auth", "true");
+    document.getElementById("loginOverlay").style.display = "none";
+    initializeApplication();
+  } else {
+    if (errorMsg) {
+      errorMsg.style.display = "block";
+    }
+  }
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+  const isAuth = sessionStorage.getItem("reelfocus_auth") === "true";
+  const overlay = document.getElementById("loginOverlay");
+  
+  if (isAuth) {
+    if (overlay) overlay.style.display = "none";
+    initializeApplication();
+  } else {
+    if (overlay) overlay.style.display = "flex";
+    
+    // Bind Enter key in password field to login
+    const passField = document.getElementById("loginPassword");
+    if (passField) {
+      passField.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          handleLogin();
+        }
+      });
+    }
+  }
 });
+
 
 // Drag to scroll helper for mouse actions
 function initDragScroll() {

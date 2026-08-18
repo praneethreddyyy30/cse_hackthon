@@ -12,6 +12,33 @@
 </head>
 <body>
 
+  <!-- Authentication Login Screen Overlay -->
+  <div id="loginOverlay" class="login-overlay" style="display: none;">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">ReelFocus</div>
+        <h2>Secure Agent Portal</h2>
+        <p>Enter credentials to access the recommendation simulator.</p>
+      </div>
+      <div class="login-body">
+        <div class="login-input-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" placeholder="e.g. admin" autocomplete="off" aria-label="Username">
+        </div>
+        <div class="login-input-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="e.g. password123" aria-label="Password">
+        </div>
+        <div id="loginError" class="login-error-msg" style="display: none;">❌ Invalid username or password</div>
+        <button onclick="handleLogin()" class="login-submit-btn" aria-label="Log in">Access Portal</button>
+      </div>
+      <div class="login-footer">
+        <p>💡 <b>Default Credentials:</b></p>
+        <p>Username: <code>admin</code> | Password: <code>password123</code></p>
+      </div>
+    </div>
+  </div>
+
   <!-- Top Application Header -->
   <header>
     <div class="brand-section">
