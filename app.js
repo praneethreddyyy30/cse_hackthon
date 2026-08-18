@@ -1,5 +1,16 @@
 // Reels Recommendation Agent - Controller Logic
 
+// HTML escaping helper to prevent XSS injection in user inputs and dynamic strings
+function escapeHTML(str) {
+  if (!str) return "";
+  return str.toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+}
+
 // Active session state
 let sessionHistory = {};
 let currentReelIndex = 0;
@@ -504,22 +515,22 @@ function renderFeedSlides() {
 
       <!-- Right Interaction Sidebar -->
       <div class="phone-actions-sidebar">
-        <button class="phone-action-btn mute-toggle-btn ${!window.isMuted ? 'unmuted-active' : ''}" onclick="toggleMuteState()">${window.isMuted ? '🔇' : '🔊'}</button>
+        <button class="phone-action-btn mute-toggle-btn ${!window.isMuted ? 'unmuted-active' : ''}" aria-label="Toggle mute" onclick="toggleMuteState()">${window.isMuted ? '🔇' : '🔊'}</button>
         <span class="phone-action-label mute-label">Sound</span>
 
-        <button class="phone-action-btn play-pause-toggle-btn" onclick="togglePlayPause()">⏸️</button>
+        <button class="phone-action-btn play-pause-toggle-btn" aria-label="Toggle play pause" onclick="togglePlayPause()">⏸️</button>
         <span class="phone-action-label play-pause-label">Pause</span>
 
-        <button class="phone-action-btn like-btn ${isLiked ? 'active-like' : ''}" onclick="toggleLike('${reel.id}')">❤️</button>
+        <button class="phone-action-btn like-btn ${isLiked ? 'active-like' : ''}" aria-label="Like video" onclick="toggleLike('${reel.id}')">❤️</button>
         <span class="phone-action-label like-label">${isLiked ? 'Liked' : 'Like'}</span>
 
-        <button class="phone-action-btn comment-btn" onclick="toggleComments(true, '${reel.id}')">💬</button>
+        <button class="phone-action-btn comment-btn" aria-label="Open comments list" onclick="toggleComments(true, '${reel.id}')">💬</button>
         <span class="phone-action-label comment-label">${state.comments.length}</span>
 
-        <button class="phone-action-btn save-btn ${isSaved ? 'active-save' : ''}" onclick="toggleSave('${reel.id}')">🔖</button>
+        <button class="phone-action-btn save-btn ${isSaved ? 'active-save' : ''}" aria-label="Save video" onclick="toggleSave('${reel.id}')">🔖</button>
         <span class="phone-action-label save-label">${isSaved ? 'Saved' : 'Save'}</span>
 
-        <button class="phone-action-btn share-btn ${isShared ? 'active-share' : ''}" onclick="triggerShare('${reel.id}')">🔗</button>
+        <button class="phone-action-btn share-btn ${isShared ? 'active-share' : ''}" aria-label="Share video link" onclick="triggerShare('${reel.id}')">🔗</button>
         <span class="phone-action-label share-label">${isShared ? 'Shared' : 'Share'}</span>
       </div>
 
@@ -1055,7 +1066,16 @@ function renderCommentsList(comments) {
   comments.forEach(txt => {
     const div = document.createElement("div");
     div.className = "comment-bubble";
-    div.innerHTML = `<div class="comment-author">You</div><div>${txt}</div>`;
+    
+    const author = document.createElement("div");
+    author.className = "comment-author";
+    author.textContent = "You";
+    
+    const content = document.createElement("div");
+    content.textContent = txt; // Programmatically set text content to prevent XSS
+    
+    div.appendChild(author);
+    div.appendChild(content);
     list.appendChild(div);
   });
   
@@ -1567,82 +1587,7 @@ function getExplainabilityFields(candidate) {
   };
 }
 
-/**
- * Render standard structured cards onto the UI matching the requested schema.
- */
-function renderRecommendations(reels) {
-  const container = document.getElementById("recommendationsList");
-  container.innerHTML = "";
-
-  reels.forEach(reel => {
-    // Generate explanation details
-    const explanation = getExplainabilityFields(reel);
-
-    const card = document.createElement("div");
-    card.className = `schema-card category-${reel.category.toLowerCase()}`;
-    
-    // Choose badge coloring
-    const diffClass = `difficulty-${reel.difficulty.toLowerCase()}`;
-    const confClass = `confidence-${reel.confidence_score.toLowerCase()}`;
-
-    card.innerHTML = `
-      <div class="schema-card-header">
-        <span class="schema-category-tag">${reel.category}</span>
-        <div class="schema-metadata">
-          <span class="meta-badge ${diffClass}">DIFFICULTY: ${reel.difficulty}</span>
-          <span class="meta-badge ${confClass}">CONFIDENCE: ${reel.confidence_score}</span>
-        </div>
-      </div>
-      
-      <!-- YouTube-style sidebar thumbnail and details layout -->
-      <div class="schema-card-body-row" style="display: flex; gap: 12px; margin-top: 8px; margin-bottom: 8px; align-items: flex-start;">
-        <img src="${reel.thumbnail || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=120&auto=format&fit=crop'}" class="schema-card-thumbnail" style="width: 120px; height: 75px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); flex-shrink: 0;" />
-        <div style="flex-grow: 1;">
-          <div class="schema-title" style="margin: 0; font-size: 0.82rem; font-weight: 700; line-height: 1.25; color: var(--text-primary);">${reel.title}</div>
-          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 3px;">by @${reel.creator}</div>
-        </div>
-      </div>
-
-      <!-- Structured Schema Output -->
-      <div class="schema-body">
-        <div class="schema-field">
-          <span class="schema-field-label">CURRENT REEL</span>
-          <span class="schema-field-value">${explanation.currentReel}</span>
-        </div>
-        <div class="schema-field">
-          <span class="schema-field-label">INTEREST DETECTED</span>
-          <span class="schema-field-value highlight-value">${explanation.interestDetected}</span>
-        </div>
-        <div class="schema-field">
-          <span class="schema-field-label">WHY</span>
-          <span class="schema-field-value">${explanation.whyEvidence}</span>
-        </div>
-        <div class="schema-field">
-          <span class="schema-field-label">RECOMMENDED TECH REEL</span>
-          <span class="schema-field-value highlight-value">${reel.title}</span>
-        </div>
-        <div class="schema-field">
-          <span class="schema-field-label">CATEGORY</span>
-          <span class="schema-field-value">${reel.category}</span>
-        </div>
-        <div class="schema-field">
-          <span class="schema-field-label">WHY THIS RECOMMENDATION</span>
-          <span class="schema-field-value">${explanation.whyRecommend}</span>
-        </div>
-        <div class="schema-field">
-          <span class="schema-field-label">DIFFICULTY</span>
-          <span class="schema-field-value">${reel.difficulty}</span>
-        </div>
-        <div class="schema-field">
-          <span class="schema-field-label">CONFIDENCE</span>
-          <span class="schema-field-value">${reel.confidence_score}</span>
-        </div>
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
-}
+// Removed duplicate renderRecommendations function to maintain code quality
 
 // Helper function to call the Gemini API with a specific model
 async function callGeminiWithModel(modelName, systemContext, apiKey) {
@@ -1955,3 +1900,8 @@ window.exportSessionLog = function() {
   downloadAnchor.click();
   downloadAnchor.remove();
 };
+
+// Node module exports for unit testing
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { calculateEngagementWeight, escapeHTML };
+}

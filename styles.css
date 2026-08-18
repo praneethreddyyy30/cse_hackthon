@@ -21,7 +21,7 @@
   /* Refined warm text colors */
   --text-primary: #2d2924;   /* Espresso Dark */
   --text-secondary: #5e5a52; /* Taupe / Classic Grey */
-  --text-muted: #9c978d;     /* Muted Sand */
+  --text-muted: #6e695f;     /* Darker Muted Sand for Accessibility Contrast */
   
   /* Premium typography selection */
   --font-sans: 'Montserrat', sans-serif;

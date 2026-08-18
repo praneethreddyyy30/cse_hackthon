@@ -19,15 +19,15 @@
       <h1>AI Recommendation Agent</h1>
     </div>
     <div class="header-controls">
-      <select id="presetSelect" class="preset-dropdown" onchange="loadPreset(this.value)" style="width: 220px; padding: 6px 12px; font-size: 0.8rem; height: 34px; margin-right: 8px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-sans); color: var(--text-primary); cursor: pointer; outline: none;">
+      <select id="presetSelect" class="preset-dropdown" aria-label="Choose scroll preset" onchange="loadPreset(this.value)" style="width: 220px; padding: 6px 12px; font-size: 0.8rem; height: 34px; margin-right: 8px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-sans); color: var(--text-primary); cursor: pointer; outline: none;">
         <option value="built_in_trap">Built-in Trap (Shallow vs. Deep Interest)</option>
         <option value="ai_engineer">AI & ML Explorer</option>
         <option value="hardware_cloud">Sysadmin & Infrastructure Enthusiast</option>
         <option value="custom">Custom Watch Session</option>
       </select>
-      <nav class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('simulator')">Reel Simulator</button>
-        <button class="tab-btn" onclick="switchTab('architecture')">System Architecture</button>
+      <nav class="nav-tabs" role="tablist" aria-label="Application tabs">
+        <button id="tab-simulator-btn" class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab('simulator')">Reel Simulator</button>
+        <button id="tab-architecture-btn" class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('architecture')">System Architecture</button>
       </nav>
       <div id="apiStatusBtn" class="api-status-indicator" onclick="openApiModal()">
         <div id="statusDot" class="status-dot"></div>
@@ -39,7 +39,7 @@
   <!-- Main Viewport -->
   <main>
     <!-- TAB 1: Simulator & Analytics Dashboard -->
-    <div id="tab-simulator" class="tab-content active">
+    <div id="tab-simulator" class="tab-content active" role="tabpanel" aria-labelledby="tab-simulator-btn">
       <div class="dashboard-grid">
         
         <!-- Left Panel: Real-Time Inferred Interest DNA & Logs (Column 1) -->
@@ -121,14 +121,14 @@
               <div id="commentsDrawer" class="phone-comments-drawer">
                 <div class="comments-header">
                   <span class="comments-title">Comments</span>
-                  <button class="close-btn" onclick="toggleComments(false)" style="font-size: 1.1rem; line-height: 1;">&times;</button>
+                  <button class="close-btn" aria-label="Close comments drawer" onclick="toggleComments(false)" style="font-size: 1.1rem; line-height: 1;">&times;</button>
                 </div>
                 <div id="commentsList" class="comments-list-box">
                   <!-- Comments added dynamically -->
                 </div>
                 <div class="comment-input-row">
-                  <input type="text" id="commentInput" class="comment-text-field" placeholder="Add a comment..." onkeydown="handleCommentSubmit(event)">
-                  <button class="comment-submit-btn" onclick="submitComment()">Post</button>
+                  <input type="text" id="commentInput" class="comment-text-field" aria-label="Add a comment input" placeholder="Add a comment..." onkeydown="handleCommentSubmit(event)">
+                  <button class="comment-submit-btn" aria-label="Post comment" onclick="submitComment()">Post</button>
                 </div>
               </div>
 
@@ -136,7 +136,7 @@
               <div class="phone-bottom-controls">
                 <div class="progress-control-row">
                   <div class="time-slider-wrapper">
-                    <input type="range" id="timeSlider" class="time-slider" min="0" max="100" value="100" oninput="updateTimeSlider(this.value)">
+                    <input type="range" id="timeSlider" class="time-slider" aria-label="Video watch progress slider" min="0" max="100" value="100" oninput="updateTimeSlider(this.value)">
                   </div>
                   <span id="timeLabel" class="time-display">0:15 / 0:15</span>
                 </div>
@@ -144,9 +144,9 @@
                 <div class="loop-control-row">
                   <span class="loop-label">Simulate Loops</span>
                   <div class="loop-buttons">
-                    <button class="loop-btn" id="loop-1" onclick="setLoops(1)">1x</button>
-                    <button class="loop-btn" id="loop-2" onclick="setLoops(2)">2x</button>
-                    <button class="loop-btn" id="loop-3" onclick="setLoops(3)">3x+</button>
+                    <button class="loop-btn" id="loop-1" aria-label="Simulate 1 loop" onclick="setLoops(1)">1x</button>
+                    <button class="loop-btn" id="loop-2" aria-label="Simulate 2 loops" onclick="setLoops(2)">2x</button>
+                    <button class="loop-btn" id="loop-3" aria-label="Simulate 3 or more loops" onclick="setLoops(3)">3x+</button>
                   </div>
                 </div>
               </div>
@@ -156,9 +156,9 @@
 
           <!-- Feed controls -->
           <div class="feed-nav-bar">
-            <button id="prevBtn" class="feed-btn" onclick="navigateFeed(-1)">&larr; Prev Reel</button>
-            <button id="resetBtn" class="feed-btn" onclick="resetSession()" style="flex: 0.5;">🔄 Reset</button>
-            <button id="nextBtn" class="feed-btn" onclick="navigateFeed(1)">Next Reel &rarr;</button>
+            <button id="prevBtn" class="feed-btn" aria-label="Go to previous video slide" onclick="navigateFeed(-1)">&larr; Prev Reel</button>
+            <button id="resetBtn" class="feed-btn" aria-label="Reset scroll session history" onclick="resetSession()" style="flex: 0.5;">🔄 Reset</button>
+            <button id="nextBtn" class="feed-btn" aria-label="Go to next video slide" onclick="navigateFeed(1)">Next Reel &rarr;</button>
           </div>
         </section>
 
@@ -181,7 +181,7 @@
     </div>
 
     <!-- TAB 2: System Architecture Diagram Explorer -->
-    <div id="tab-architecture" class="tab-content">
+    <div id="tab-architecture" class="tab-content" role="tabpanel" aria-labelledby="tab-architecture-btn">
       <div class="panel-architecture">
         <div class="arch-header">
           <h2>Enterprise System Design</h2>
