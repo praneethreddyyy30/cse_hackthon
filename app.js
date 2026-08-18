@@ -16,6 +16,7 @@ let sessionHistory = {};
 let currentReelIndex = 0;
 let apiKey = ""; // Hardcoded default Gemini API Key (empty for Offline-first by default)
 let originalReelsCount = 8; // Track original seed reels count to clear recommendations on reset
+let isRendering = false; // Flag to prevent observer loops during slide re-renders
 
 // YouTube Iframe Player API caches and volume management
 window.ytPlayers = {};
@@ -495,6 +496,8 @@ function renderFeedSlides() {
   const container = document.getElementById("phoneScrollContainer");
   if (!container) return;
 
+  isRendering = true;
+
   const savedScrollTop = container.scrollTop;
 
   container.innerHTML = "";
@@ -602,6 +605,10 @@ function renderFeedSlides() {
   container.scrollTop = savedScrollTop;
 
   setActiveReel(currentReelIndex);
+
+  setTimeout(() => {
+    isRendering = false;
+  }, 100);
 }
 
 /**
@@ -621,6 +628,7 @@ function setupScrollObserver() {
   };
 
   scrollObserver = new IntersectionObserver((entries) => {
+    if (isRendering) return;
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const reelId = entry.target.getAttribute("data-id");
@@ -1867,54 +1875,54 @@ function renderRecommendations(reels) {
 
     card.innerHTML = `
       <div class="schema-card-header">
-        <span class="${categoryTagClass}">${categoryTagText}</span>
+        <span class="${escapeHTML(categoryTagClass)}">${escapeHTML(categoryTagText)}</span>
         <div class="schema-metadata">
-          <span class="meta-badge ${diffClass}">DIFFICULTY: ${reel.difficulty}</span>
-          <span class="meta-badge ${confClass}">CONFIDENCE: ${reel.confidence_score}</span>
+          <span class="meta-badge ${escapeHTML(diffClass)}">DIFFICULTY: ${escapeHTML(reel.difficulty)}</span>
+          <span class="meta-badge ${escapeHTML(confClass)}">CONFIDENCE: ${escapeHTML(reel.confidence_score)}</span>
         </div>
       </div>
       
-      <div class="schema-title">${reel.title}</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: -6px;">by @${reel.creator}</div>
+      <div class="schema-title">${escapeHTML(reel.title)}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: -6px;">by @${escapeHTML(reel.creator)}</div>
 
       <!-- Structured Schema Output -->
       <div class="schema-body">
         <div class="schema-field">
           <span class="schema-field-label">CURRENT REEL</span>
-          <span class="schema-field-value">${explanation.currentReel}</span>
+          <span class="schema-field-value">${escapeHTML(explanation.currentReel)}</span>
         </div>
         <div class="schema-field">
           <span class="schema-field-label">INTEREST DETECTED</span>
-          <span class="schema-field-value highlight-value">${explanation.interestDetected}</span>
+          <span class="schema-field-value highlight-value">${escapeHTML(explanation.interestDetected)}</span>
         </div>
         <div class="schema-field">
           <span class="schema-field-label">WHY</span>
-          <span class="schema-field-value">${explanation.whyEvidence}</span>
+          <span class="schema-field-value">${escapeHTML(explanation.whyEvidence)}</span>
         </div>
         <div class="schema-field">
           <span class="schema-field-label">RECOMMENDED TECH REEL</span>
-          <span class="schema-field-value highlight-value">${reel.title}</span>
+          <span class="schema-field-value highlight-value">${escapeHTML(reel.title)}</span>
         </div>
         <div class="schema-field">
           <span class="schema-field-label">CATEGORY</span>
-          <span class="schema-field-value">${reel.category}</span>
+          <span class="schema-field-value">${escapeHTML(reel.category)}</span>
         </div>
         <div class="schema-field">
           <span class="schema-field-label">WHY THIS RECOMMENDATION</span>
-          <span class="schema-field-value">${explanation.whyRecommend}</span>
+          <span class="schema-field-value">${escapeHTML(explanation.whyRecommend)}</span>
         </div>
         <div class="schema-field">
           <span class="schema-field-label">DIFFICULTY</span>
-          <span class="schema-field-value">${reel.difficulty}</span>
+          <span class="schema-field-value">${escapeHTML(reel.difficulty)}</span>
         </div>
         <div class="schema-field">
           <span class="schema-field-label">CONFIDENCE</span>
-          <span class="schema-field-value">${reel.confidence_score}</span>
+          <span class="schema-field-value">${escapeHTML(reel.confidence_score)}</span>
         </div>
       </div>
       
       ${reel.is_external ? `
-        <a href="${reel.youtube_url}" target="_blank" class="external-link-btn">
+        <a href="${escapeHTML(reel.youtube_url)}" target="_blank" class="external-link-btn">
           <span>▶ Watch on YouTube</span>
         </a>
       ` : ''}
