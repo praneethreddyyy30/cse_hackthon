@@ -824,6 +824,19 @@ function setActiveReel(index) {
     }
   }
 
+  // Instantly update the CURRENT REEL fields on all recommendation cards to match the new slide
+  const activeReelTitle = INPUT_REELS[index] ? INPUT_REELS[index].title : "None";
+  document.querySelectorAll(".schema-card").forEach(card => {
+    const fields = card.querySelectorAll(".schema-field");
+    fields.forEach(field => {
+      const label = field.querySelector(".schema-field-label");
+      if (label && label.textContent === "CURRENT REEL") {
+        const val = field.querySelector(".schema-field-value");
+        if (val) val.textContent = activeReelTitle;
+      }
+    });
+  });
+
   // Recalculate DNA as index changes to capture active scroll weight
   recalculateDNA();
 }
@@ -1380,9 +1393,15 @@ function triggerDebouncedRecommendations() {
   }
   
   clearTimeout(recommendTimeout);
-  recommendTimeout = setTimeout(() => {
+  if (!apiKey) {
+    // Local Mode: execute instantly to keep the UI in sync with scrolls
     generateRecommendations();
-  }, 800); // 800ms snappier debounce rate to avoid API limits and capture final active slide focus
+  } else {
+    // Gemini Live Mode: debounce to preserve API key limits
+    recommendTimeout = setTimeout(() => {
+      generateRecommendations();
+    }, 1000);
+  }
 }
 
 // Simulated asynchronous database query (prevents CORS blocks on local file runs)
