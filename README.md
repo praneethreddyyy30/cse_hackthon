@@ -45,19 +45,19 @@ The following diagram illustrates the lifecycle of a scrolling session and how t
 ```mermaid
 graph TD
     %% Telemetry Ingestion
-    subgraph Client App (Browser)
+    subgraph "Client App (Browser)"
         A[User Scrolls/Swipes Phone] -->|Micro-Telemetry Events| B(Telemetry Collector)
         B -->|Watch Ratio, Likes, Saves, Comments| C{Profiler Engine}
     end
 
     %% DNA & Scoring
-    subgraph Profiling & DNA compiler
+    subgraph "Profiling & DNA compiler"
         C -->|EW Scoring Formula| D[Dynamic Interest DNA Vector]
         D -->|Affinities Updated| E(Gamified Dashboard Stats)
     end
 
     %% Matching & RAG
-    subgraph Dual Retrieval Pipeline
+    subgraph "Dual Retrieval Pipeline"
         D -->|Vector Affinities| F{Retrieval Engine}
         F -->|Offline Cosine Similarity| G[(Local Candidate DB - data.js)]
         F -->|Fallback/API Key Active| H[Live Gemini LLM RAG Agent]
@@ -67,7 +67,7 @@ graph TD
     end
 
     %% Formatting & Feedback Loop
-    subgraph Feedback & Injection
+    subgraph "Feedback & Injection"
         I -->|Structured Output| K[AI Recommendation List]
         J -->|JSON Schema Response| K
         K -->|Auto-Play Injection| L[Append to INPUT_REELS as Reel 9]
